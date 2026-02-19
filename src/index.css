@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  /* Zen Theme Colors */
+  --color-zen-bg: #f5f5f0;
+  /* Rice Paper / Off-white */
+  --color-zen-text: #3e3e3e;
+  /* Charcoal / Soft Black */
+  --color-zen-primary: #795548;
+  /* Brown */
+  --color-zen-secondary: #a1887f;
+  /* Light Brown */
+  --color-zen-accent: #d7ccc8;
+  /* Pale Brown */
+
+  /* Fonts */
+  --font-serif: "Noto Serif SC", serif;
+  --font-sans: "Noto Sans SC", sans-serif;
+}
+
+/* Base Styles */
+body {
+  background-color: var(--color-zen-bg);
+  color: var(--color-zen-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar Utilities */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
