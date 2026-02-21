@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLibraryStore } from '../../store/useLibraryStore';
-import { Plus, Edit, Trash2, Save, X, ArrowLeft, Loader2, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, ArrowLeft, Loader2, RefreshCw, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
