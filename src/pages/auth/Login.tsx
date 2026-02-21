@@ -23,18 +23,25 @@ export const Login: React.FC = () => {
         // TODO: Replace with Real Supabase Auth
         // Simulating network delay and auto-register logic
         setTimeout(() => {
+            const isAdmin = phone === 'admin' && password === '888888';
             const mockUser = {
-                id: 'user-' + Date.now(),
+                id: isAdmin ? 'admin-system' : 'user-' + Date.now(),
                 phone: phone,
-                nickname: '佛友_' + phone.slice(-4),
-                role: 'user' as const
+                nickname: isAdmin ? '超级管理员' : '佛友_' + phone.slice(-4),
+                role: (isAdmin ? 'admin' : 'user') as 'admin' | 'user'
             };
             const mockToken = 'mock-jwt-token';
 
             login(mockUser, mockToken);
             setLoading(false);
-            navigate('/tabs/jingxin');
-        }, 1000);
+
+            // If admin, go directly to dash
+            if (isAdmin) {
+                navigate('/admin');
+            } else {
+                navigate('/tabs/jingxin');
+            }
+        }, 800);
     };
 
     return (
