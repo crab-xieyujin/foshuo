@@ -133,7 +133,7 @@ export const AdminDashboard: React.FC = () => {
             setIsUploading(true);
             // 1. Upload to Supabase Storage
             const fileName = `foshuo_${Date.now()}.apk`;
-            const { data, error } = await supabase.storage
+            const { error } = await supabase.storage
                 .from('apks')
                 .upload(fileName, file);
 
