@@ -15,6 +15,7 @@
     "@capacitor/app": "^8.0.1",
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0",
+    "@supabase/supabase-js": "^2.97.0",
     "@types/react-howler": "^5.2.3",
     "classnames": "^2.5.1",
     "framer-motion": "^12.34.2",

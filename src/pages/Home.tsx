@@ -164,7 +164,7 @@ export const Home: React.FC = () => {
 
             {/* Bottom Action Bar (Selection Mode) */}
             {isSelectionMode && (
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur border-t border-zen-accent/20 flex items-center justify-between z-20">
+                <div className="fixed bottom-0 left-0 right-0 p-4 pb-safe bg-white/95 backdrop-blur-md border-t border-zen-accent/30 flex items-center justify-between z-[60] shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
                     <span className="text-sm text-zen-secondary ml-2">长按卡片可多选</span>
                     <button
                         onClick={handleDelete}

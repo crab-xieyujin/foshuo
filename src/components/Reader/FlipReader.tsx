@@ -49,8 +49,13 @@ export const FlipReader: React.FC<FlipReaderProps> = ({ scripture }) => {
     }, []);
 
     useEffect(() => {
-        measureContainer();
-        const observer = new ResizeObserver(measureContainer);
+        // 延迟一帧确保浏览器完成布局
+        requestAnimationFrame(() => {
+            measureContainer();
+        });
+        const observer = new ResizeObserver(() => {
+            requestAnimationFrame(measureContainer);
+        });
         if (containerRef.current) observer.observe(containerRef.current);
         return () => observer.disconnect();
     }, [measureContainer]);
@@ -71,65 +76,81 @@ export const FlipReader: React.FC<FlipReaderProps> = ({ scripture }) => {
             >
                 {/* Only render book once we know the size */}
                 {bookSize.width > 0 && bookSize.height > 0 && (
-                    // @ts-ignore
-                    <HTMLFlipBook
-                        key={bookKey}
-                        width={bookSize.width}
-                        height={bookSize.height}
-                        size="fixed"
-                        minWidth={bookSize.width}
-                        maxWidth={bookSize.width}
-                        minHeight={bookSize.height}
-                        maxHeight={bookSize.height}
-                        maxShadowOpacity={0.35}
-                        showCover={true}
-                        mobileScrollSupport={false}
-                        ref={bookRef}
-                        onFlip={(e: { data: number }) => setCurrentPage(e.data)}
-                        style={{ width: '100%', height: '100%' }}
-                    >
-                        {/* Front Cover */}
-                        <BookPage isCover={true}>
-                            <div className="h-full flex flex-col items-center justify-center text-center">
-                                <div className="border-2 border-white/40 px-6 py-10 rounded-lg">
-                                    <h1 className="text-2xl font-serif font-bold tracking-widest leading-relaxed writing-vertical-rl text-white drop-shadow">
-                                        {scripture.title}
-                                    </h1>
-                                </div>
-                                {scripture.author && (
-                                    <p className="mt-8 text-white/70 font-serif writing-vertical-rl text-sm tracking-wider">
-                                        {scripture.author}
-                                    </p>
-                                )}
-                            </div>
-                        </BookPage>
-
-                        {/* Content Pages */}
-                        {pages.map((content, index) => (
-                            <BookPage key={`page-${index}`} number={index + 1}>
-                                <div className="h-full w-full flex items-center justify-center overflow-hidden">
-                                    <div
-                                        className={classNames(
-                                            'writing-vertical-rl font-serif tracking-wider leading-relaxed text-zen-text h-full pt-4 pb-6 overflow-hidden',
-                                            FONTSIZE_CLASS[settings.fontSize]
-                                        )}
-                                    >
-                                        {content}
+                    <>
+                        {/* @ts-ignore */}
+                        <HTMLFlipBook
+                            key={bookKey}
+                            width={bookSize.width}
+                            height={bookSize.height}
+                            size="fixed"
+                            minWidth={bookSize.width}
+                            maxWidth={bookSize.width}
+                            minHeight={bookSize.height}
+                            maxHeight={bookSize.height}
+                            maxShadowOpacity={0.35}
+                            showCover={true}
+                            mobileScrollSupport={false}
+                            clickEventForward={true}
+                            useMouseEvents={true}
+                            ref={bookRef}
+                            onFlip={(e: { data: number }) => setCurrentPage(e.data)}
+                            style={{ width: '100%', height: '100%' }}
+                        >
+                            {/* Front Cover */}
+                            <BookPage isCover={true}>
+                                <div className="h-full flex flex-col items-center justify-center text-center">
+                                    <div className="border-2 border-white/40 px-6 py-10 rounded-lg">
+                                        <h1 className="text-2xl font-serif font-bold tracking-widest leading-relaxed writing-vertical-rl text-white drop-shadow">
+                                            {scripture.title}
+                                        </h1>
                                     </div>
+                                    {scripture.author && (
+                                        <p className="mt-8 text-white/70 font-serif writing-vertical-rl text-sm tracking-wider">
+                                            {scripture.author}
+                                        </p>
+                                    )}
                                 </div>
                             </BookPage>
-                        ))}
 
-                        {/* Back Cover */}
-                        <BookPage isCover={true}>
-                            <div className="h-full flex flex-col items-center justify-center text-center gap-6">
-                                <p className="font-serif text-white/70 writing-vertical-rl text-sm tracking-wider">
-                                    愿以此功德　庄严佛净土
-                                </p>
-                                <p className="text-white/40 text-xs">南无阿弥陀佛</p>
-                            </div>
-                        </BookPage>
-                    </HTMLFlipBook>
+                            {/* Content Pages */}
+                            {pages.map((content, index) => (
+                                <BookPage key={`page-${index}`} number={index + 1}>
+                                    <div className="h-full w-full flex items-center justify-center overflow-hidden">
+                                        <div
+                                            className={classNames(
+                                                'writing-vertical-rl font-serif tracking-wider leading-relaxed text-zen-text h-full pt-4 pb-6 overflow-hidden select-none pointer-events-none',
+                                                FONTSIZE_CLASS[settings.fontSize]
+                                            )}
+                                        >
+                                            {content}
+                                        </div>
+                                    </div>
+                                </BookPage>
+                            ))}
+
+                            {/* Back Cover */}
+                            <BookPage isCover={true}>
+                                <div className="h-full flex flex-col items-center justify-center text-center gap-6">
+                                    <p className="font-serif text-white/70 writing-vertical-rl text-sm tracking-wider">
+                                        愿以此功德　庄严佛净土
+                                    </p>
+                                    <p className="text-white/40 text-xs">南无阿弥陀佛</p>
+                                </div>
+                            </BookPage>
+                        </HTMLFlipBook>
+
+                        {/* 透明点击层：解决部分区域无法响应点击的问题 */}
+                        <div className="absolute inset-0 pointer-events-none z-20">
+                            <div
+                                onClick={prevFlip}
+                                className="absolute left-0 top-0 bottom-0 w-[40%] pointer-events-auto cursor-pointer"
+                            />
+                            <div
+                                onClick={nextFlip}
+                                className="absolute right-0 top-0 bottom-0 w-[40%] pointer-events-auto cursor-pointer"
+                            />
+                        </div>
+                    </>
                 )}
             </div>
 

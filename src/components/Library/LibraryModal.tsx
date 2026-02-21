@@ -17,7 +17,7 @@ const PRESET_STORE = PRESETS;
 
 export const LibraryModal: React.FC<LibraryModalProps> = ({ onClose }) => {
     const navigate = useNavigate();
-    const { addScripture, removeScripture, userScriptures } = useLibraryStore();
+    const { addScripture, removeScripture, scriptures } = useLibraryStore();
     const { setScripture: setCurrentScripture } = useAppStore();
     const settings = useSettingsStore();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,7 +25,10 @@ export const LibraryModal: React.FC<LibraryModalProps> = ({ onClose }) => {
     const [tab, setTab] = useState<'store' | 'local'>('store');
     const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
-    const userIds = new Set(userScriptures.map(u => u.id));
+    // 已在书架中的 id 集合（用于预设书库的已添加状态）
+    const userIds = new Set(scriptures.map(s => s.id));
+    // 用户上传的经文（id 以 user- 开头）
+    const userUploaded = scriptures.filter(s => s.id.startsWith('user-'));
 
 
     const handlePresetAdd = (preset: typeof PRESET_STORE[0]) => {
@@ -85,7 +88,7 @@ export const LibraryModal: React.FC<LibraryModalProps> = ({ onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex flex-col bg-black/60 backdrop-blur-sm" onClick={onClose}>
+        <div className="fixed inset-0 z-[100] flex flex-col bg-black/60 backdrop-blur-sm" onClick={onClose}>
             <div
                 className="absolute bottom-0 left-0 right-0 bg-[#fdf9f4] rounded-t-2xl shadow-2xl"
                 style={{ maxHeight: '85vh' }}
@@ -135,8 +138,7 @@ export const LibraryModal: React.FC<LibraryModalProps> = ({ onClose }) => {
                                         {isOwned ? (
                                             <button
                                                 onClick={() => {
-                                                    const s = PRESETS.find(p => p.id === preset.id)
-                                                        || userScriptures.find(u => u.id === preset.id);
+                                                    const s = scriptures.find(p => p.id === preset.id);
                                                     if (s) handleOpen(s);
                                                 }}
                                                 className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-3 py-1.5 rounded-full"
@@ -186,24 +188,24 @@ export const LibraryModal: React.FC<LibraryModalProps> = ({ onClose }) => {
                             )}
 
                             {/* User Scriptures List */}
-                            {userScriptures.length > 0 && (
+                            {userUploaded.length > 0 && (
                                 <div>
                                     <h3 className="text-xs font-bold text-zen-secondary uppercase tracking-wider mb-2">已导入经文</h3>
                                     <div className="space-y-2">
-                                        {userScriptures.map(s => (
-                                            <div key={s.id} className="bg-white rounded-xl p-3 shadow-sm border border-zen-accent/20 flex items-center gap-3">
+                                        {userUploaded.map((u: Scripture) => (
+                                            <div key={u.id} className="bg-white rounded-xl p-3 shadow-sm border border-zen-accent/20 flex items-center gap-3">
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-serif text-sm font-medium text-zen-text truncate">{s.title}</p>
-                                                    <p className="text-xs text-zen-secondary mt-0.5">{s.pages?.length ?? 0} 页</p>
+                                                    <p className="font-serif text-sm font-medium text-zen-text truncate">{u.title}</p>
+                                                    <p className="text-xs text-zen-secondary mt-0.5">{u.pages?.length ?? 0} 页</p>
                                                 </div>
                                                 <button
-                                                    onClick={() => handleOpen(s)}
+                                                    onClick={() => handleOpen(u)}
                                                     className="text-xs text-zen-primary bg-zen-bg px-2 py-1 rounded-full"
                                                 >
                                                     <BookOpen size={12} />
                                                 </button>
                                                 <button
-                                                    onClick={() => removeScripture(s.id)}
+                                                    onClick={() => removeScripture(u.id)}
                                                     className="text-xs text-red-400 hover:text-red-600"
                                                 >
                                                     <Trash2 size={14} />

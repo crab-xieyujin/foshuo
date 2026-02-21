@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ReactHowler from 'react-howler';
 import { useAppStore } from '../store/useAppStore';
 import { useSettingsStore } from '../store/useSettingsStore';
+import { useLibraryStore } from '../store/useLibraryStore';
 import { scriptures } from '../data/scriptures';
 import { FlipReader } from '../components/Reader/FlipReader';
 import { ScrollReader } from '../components/Reader/ScrollReader';
@@ -16,20 +17,31 @@ export const Reader: React.FC = () => {
 
     const { currentScripture, setScripture } = useAppStore();
     const settings = useSettingsStore();
+    const libraryScriptures = useLibraryStore(s => s.scriptures);
 
     const [showSettings, setShowSettings] = useState(false);
 
     // Load scripture on mount / id change
+    // Also reload if currentScripture exists but has no content (stale localStorage)
     useEffect(() => {
-        if (!currentScripture || currentScripture.id !== id) {
-            const found = scriptures.find(s => s.id === id);
-            if (found) {
-                setScripture(found);
-            } else {
-                navigate('/');
-            }
+        const needsLoad = !currentScripture || currentScripture.id !== id || !currentScripture.content;
+        if (!needsLoad) return;
+
+        // 1. 从 libraryStore（含用户上传）查找
+        const fromLib = libraryScriptures.find(s => s.id === id);
+        if (fromLib && fromLib.content) {
+            setScripture(fromLib);
+            return;
         }
-    }, [id, currentScripture, setScripture, navigate]);
+        // 2. 从静态预设查找
+        const fromPreset = scriptures.find(s => s.id === id);
+        if (fromPreset) {
+            setScripture(fromPreset);
+            return;
+        }
+        // 3. 都找不到则返回首页
+        navigate('/');
+    }, [id, currentScripture, setScripture, navigate, libraryScriptures]);
 
     // Dynamic Pagination (only for flip mode, scroll mode uses raw content)
     const paginatedScripture = useMemo(() => {
@@ -44,7 +56,7 @@ export const Reader: React.FC = () => {
     if (!paginatedScripture) return null;
 
     return (
-        <div className="h-full flex flex-col relative overflow-hidden"
+        <div className="h-dvh flex flex-col relative overflow-hidden"
             style={{ background: 'linear-gradient(160deg, #3e2723 0%, #5d4037 50%, #3e2723 100%)' }}>
 
             {/* Background Audio */}
