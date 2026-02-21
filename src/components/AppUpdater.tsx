@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { Download, X } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface VersionInfo {
     version: string;
@@ -9,8 +10,6 @@ interface VersionInfo {
     downloadUrl: string;
     releaseNotes?: string;
 }
-
-const UPDATE_CHECK_URL = 'http://foshuo.onecheers.com/version.json';
 
 export const AppUpdater: React.FC = () => {
     const [updateAvailable, setUpdateAvailable] = useState<VersionInfo | null>(null);
@@ -24,16 +23,26 @@ export const AppUpdater: React.FC = () => {
             try {
                 // 1. Get current app version
                 const appInfo = await App.getInfo();
-                const currentBuild = parseInt(appInfo.build); // e.g., 1
+                const currentBuild = parseInt(appInfo.build);
 
-                // 2. Fetch remote version info
-                const response = await fetch(UPDATE_CHECK_URL + '?t=' + Date.now());
-                if (!response.ok) return;
+                // 2. Fetch remote version info from Supabase
+                const { data, error } = await supabase
+                    .from('app_versions')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
 
-                const remoteInfo: VersionInfo = await response.json();
+                if (error || !data) return;
+
+                const remoteInfo: VersionInfo = {
+                    version: data.version,
+                    build: data.build,
+                    downloadUrl: data.download_url,
+                    releaseNotes: data.release_notes
+                };
 
                 // 3. Compare versions
-                // Simple comparison: build number is most reliable for Android
                 if (remoteInfo.build > currentBuild) {
                     setUpdateAvailable(remoteInfo);
                     setShowModal(true);
